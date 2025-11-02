@@ -17,6 +17,19 @@ export default class SmileVoteApp extends Component {
     };
   }
 
+  componentDidMount() {
+    const savedSmiles = localStorage.getItem("smileVotes");
+    if (savedSmiles) {
+      this.setState({ smiles: JSON.parse(savedSmiles) });
+    }
+  }
+
+  componentDidUpdate(prevProps, prevState) {
+    if (prevState.smiles !== this.state.smiles) {
+      localStorage.setItem("smileVotes", JSON.stringify(this.state.smiles));
+    }
+  }
+
   handleVote = (id) => {
     this.setState((prevState) => ({
       smiles: prevState.smiles.map((s) =>
@@ -32,12 +45,23 @@ export default class SmileVoteApp extends Component {
     this.setState({ winner: topSmile });
   };
 
+  clearResults = () => {
+    const resetSmiles = this.state.smiles.map((s) => ({
+      ...s,
+      votes: 0,
+    }));
+
+    this.setState({ smiles: resetSmiles, winner: null });
+
+    localStorage.removeItem("smileVotes");
+  };
+
   render() {
     const { smiles, winner } = this.state;
 
     return (
       <div className="app">
-        <h1>Vote for best emoji 😄</h1>
+        <h1>😄 Голосуй за кращий смайл</h1>
 
         <div className="smile-list">
           {smiles.map((smile) => (
@@ -50,9 +74,14 @@ export default class SmileVoteApp extends Component {
           ))}
         </div>
 
-        <button className="show-btn" onClick={this.showResults}>
-          Show Results
-        </button>
+        <div className="buttons">
+          <button className="show-btn" onClick={this.showResults}>
+            Показати результати
+          </button>
+          <button className="clear-btn" onClick={this.clearResults}>
+            Очистити результати
+          </button>
+        </div>
 
         {winner && <WinnerCard winner={winner} />}
       </div>
